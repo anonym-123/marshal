@@ -16,13 +16,12 @@ public class MarshalSession {
 
 	private ECKeyPair initSameUserRatchetKey;
 	
-	//private ECKeyPair localSameUserRatchetKeyPair;
-	
 	private ECPublicKey remoteMarshalSignatureKey;
 	
 	private ECPublicKey remoteCrossUserRatchetKey;
 	private ECKeyPair localCrossUserRatchetKey;
 	
+	private byte[] listChainRatchetKeys;
 	private byte[] chainKey;
 	
 	private int countX;
@@ -86,14 +85,6 @@ public class MarshalSession {
 		this.remotePreKey = remotePreKey;
 	}
 
-	/*public ECKeyPair getLocalSameUserRatchetKeyPair() {
-		return localSameUserRatchetKeyPair;
-	}
-
-	public void setLocalSameUserRatchetKeyPair(ECKeyPair localSameUserRatchetKeyPair) {
-		this.localSameUserRatchetKeyPair = localSameUserRatchetKeyPair;
-	}*/
-
 	public ECKeyPair getInitSameUserRatchetKey() {
 		return initSameUserRatchetKey;
 	}
@@ -144,6 +135,14 @@ public class MarshalSession {
 
 	public void setRemoteMarshalSignatureKey(ECPublicKey remoteMarshalSignatureKey) {
 		this.remoteMarshalSignatureKey = remoteMarshalSignatureKey;
+	}
+
+	public byte[] getListChainRatchetKeys() {
+		return listChainRatchetKeys;
+	}
+
+	public void setListChainRatchetKeys(byte[] listChainRatchetKeys) {
+		this.listChainRatchetKeys = listChainRatchetKeys;
 	}
 	
 }

@@ -102,7 +102,7 @@ public class MarshalSessionCipher {
 		
 		byte[] messageKey = getMessageKey(sigma, messageSameUserRatchetKey.getPrivateKey(), session.getRemoteIdentityKey().getPublicKey(), newChainKey, session);
 		byte[] iv = getIV();
-		byte[] additionalData = getAdditionalDataMessage(nextCrossUserRatchetKey.getPublicKey(), "(1,2)", messageSameUserRatchetKey.getPublicKey(), sigma);
+		byte[] additionalData = getAdditionalDataMessage(nextCrossUserRatchetKey.getPublicKey(), "(1,2)", messageSameUserRatchetKey.getPublicKey().serialize(), sigma);
 		
 		byte[] ciphertext = getCiphertext(message, messageKey, iv, additionalData);
 		byte[] ciphertextSignature = Curve.calculateSignature(this.store.getMarshalSignatureKeyPair().getPrivateKey(), ciphertext);
@@ -142,17 +142,29 @@ public class MarshalSessionCipher {
 			chainKey = kdf.deriveSecrets(kdfKey, kdfData, 32);
 			session.setCountY(session.getCountY() + 1);
 			session.setCountX(1);
+			session.setListChainRatchetKeys(new byte[0]);
 		} else {
 			crossUserRatchetKey = session.getLocalCrossUserRatchetKey();
 			chainKey = session.getChainKey();
 			session.setCountX(session.getCountX() + 1);
 		}
 		
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+		byte[] updatedRatchetList;
+		try {
+			outputStream.write(session.getListChainRatchetKeys());
+			outputStream.write(messageSameUserRatchetKey.getPublicKey().serialize());
+			updatedRatchetList = outputStream.toByteArray( );
+		} catch (IOException e) {
+			throw new AssertionError(e);
+		}
+		session.setListChainRatchetKeys(updatedRatchetList);
+		
 		byte sigma[] = getMarshalSignature(session.getRemoteCrossUserRatchetKey(), messageSameUserRatchetKey.getPublicKey());
 		byte[] messageKey = getMessageKey(sigma, messageSameUserRatchetKey.getPrivateKey(), session.getRemoteIdentityKey().getPublicKey(), chainKey, session);
 		byte[] iv = getIV();
 		String counter = "(" + session.getCountX() + "," + session.getCountY() + ")";
-		byte[] additionalData = getAdditionalDataMessage(crossUserRatchetKey.getPublicKey(), counter, messageSameUserRatchetKey.getPublicKey(), sigma);
+		byte[] additionalData = getAdditionalDataMessage(crossUserRatchetKey.getPublicKey(), counter, session.getListChainRatchetKeys(), sigma);
 		
 		byte[] ciphertext = getCiphertext(message, messageKey, iv, additionalData);
 		byte[] ciphertextSignature = Curve.calculateSignature(this.store.getMarshalSignatureKeyPair().getPrivateKey(), ciphertext);
@@ -203,7 +215,7 @@ public class MarshalSessionCipher {
 		
 		byte[] messageKey = getMessageKey(sigma, this.store.getIdentityKeyPair().getPrivateKey(), preKeyMessage.getMessage().getSenderSameUserRatchetKey(), newChainKey, session);
 		byte[] iv = preKeyMessage.getMessage().getIv();
-		byte[] additionalData = getAdditionalDataMessage(preKeyMessage.getMessage().getSenderCrossUserRatchetKey(), "(1,2)", preKeyMessage.getMessage().getSenderSameUserRatchetKey(), sigma);
+		byte[] additionalData = getAdditionalDataMessage(preKeyMessage.getMessage().getSenderCrossUserRatchetKey(), "(1,2)", preKeyMessage.getMessage().getSenderSameUserRatchetKey().serialize(), sigma);
 		
 		byte[] plaintext = getPlaintext(preKeyMessage.getMessage().getCiphertext(), messageKey, iv, additionalData);
 		
@@ -289,15 +301,27 @@ public class MarshalSessionCipher {
 			chainKey = kdf.deriveSecrets(kdfKey, kdfData, 32);
 			session.setCountY(session.getCountY() + 1);
 			session.setCountX(1);
+			session.setListChainRatchetKeys(new byte[0]);
 		} else {
 			chainKey = session.getChainKey();
 			session.setCountX(session.getCountX() + 1);
 		}
 		
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+		byte[] updatedRatchetList;
+		try {
+			outputStream.write(session.getListChainRatchetKeys());
+			outputStream.write(message.getSenderSameUserRatchetKey().serialize());
+			updatedRatchetList = outputStream.toByteArray( );
+		} catch (IOException e) {
+			throw new AssertionError(e);
+		}
+		session.setListChainRatchetKeys(updatedRatchetList);
+		
 		byte[] messageKey = getMessageKey(sigma, this.store.getIdentityKeyPair().getPrivateKey(), message.getSenderSameUserRatchetKey(), chainKey, session);
 		byte[] iv = message.getIv();
 		String counter = "(" + session.getCountX() + "," + session.getCountY() + ")";
-		byte[] additionalData = getAdditionalDataMessage(message.getSenderCrossUserRatchetKey(), counter, message.getSenderSameUserRatchetKey(), sigma);
+		byte[] additionalData = getAdditionalDataMessage(message.getSenderCrossUserRatchetKey(), counter, session.getListChainRatchetKeys(), sigma);
 		
 		byte[] plaintext = getPlaintext(message.getCiphertext(), messageKey, iv, additionalData);
 		
@@ -364,12 +388,12 @@ public class MarshalSessionCipher {
 		}
 	}
 
-	private byte[] getAdditionalDataMessage(ECPublicKey crossUserRatchetKey, String counter, ECPublicKey messageSameUserRatchetKey, byte[] sigma) {
+	private byte[] getAdditionalDataMessage(ECPublicKey crossUserRatchetKey, String counter, byte[] listRatchetKeys, byte[] sigma) {
 		try {
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			outputStream.write(crossUserRatchetKey.serialize());
 			outputStream.write(counter.getBytes());
-			outputStream.write(messageSameUserRatchetKey.serialize());
+			outputStream.write(listRatchetKeys);
 			outputStream.write(sigma);
 			return outputStream.toByteArray();
 		} catch(IOException e) {
