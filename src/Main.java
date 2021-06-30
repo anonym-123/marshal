@@ -819,8 +819,6 @@ public class Main {
 
 		// Test size
 		System.out.println("Test Marshal message size : ");
-		System.out.println("Message content : \"Alice message\", Content size : "
-				+ ObjectSizeFetcher.getObjectSize("Alice message".getBytes()));
 
 		MarshalMessage messageA = aliceSessionCipher.encrypt("Alice message".getBytes(), true);
 		System.out.println("Message 1 : " + ObjectSizeFetcher.getObjectSize(messageA.serialize()));
@@ -879,9 +877,7 @@ public class Main {
 
 		// Test size
 		System.out.println("Test Signal message size : ");
-		System.out.println("Message content : \"Alice message\", Content size : "
-				+ ObjectSizeFetcher.getObjectSize("Alice message".getBytes()));
-
+		
 		CiphertextMessage messageA = aliceSessionCipher.encrypt("Alice message.".getBytes());
 		SignalMessage signalMessageA = new SignalMessage(messageA.serialize());
 		System.out.println("Message 1 : " + ObjectSizeFetcher.getObjectSize(signalMessageA.serialize()));
@@ -918,6 +914,8 @@ public class Main {
 		System.out.println("Run Evolution tests :");
 		test_marshal_evol_sameChain();
 		test_marshal_evol_newChain();
+		System.out.println("Evolution tests end.");
+		System.out.println("");
 
 		test_size_marshal(50);
 		test_size_signal(50);
