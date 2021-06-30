@@ -20,5 +20,3 @@ and the run the tests using the run.sh script :
 ```
 sh ./run.sh
 ```
-
-Alternatively you can import the project in eclipse and add the jar files contained in the libs folder to the classpath.
