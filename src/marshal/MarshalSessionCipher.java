@@ -70,7 +70,9 @@ public class MarshalSessionCipher {
 														   session.getCountY(), 
 														   messageSameUserRatchetKey.getPublicKey(), 
 														   sigma,
-														   session.getLocalCrossUserRatchetKey().getPublicKey());
+														   session.getLocalCrossUserRatchetKey().getPublicKey(),
+														   messageSameUserRatchetKey.getPublicKey().serialize());
+		
 		MarshalPreKeyMessage marshalPreKeyMessage = new MarshalPreKeyMessage(marshalMessage, 
 																			 session.getEphemeralKeyPair().getPublicKey(), 
 																			 this.store.getIdentityKeyPair().getPublicKey().getPublicKey(), 
@@ -116,7 +118,8 @@ public class MarshalSessionCipher {
 													session.getCountY(),
 													messageSameUserRatchetKey.getPublicKey(),
 													sigma,
-													nextCrossUserRatchetKey.getPublicKey());
+													nextCrossUserRatchetKey.getPublicKey(),
+													messageSameUserRatchetKey.getPublicKey().serialize());
 		
 		MarshalPreKeyMessage marshalPreKeyMessage = new MarshalPreKeyMessage(marshalMessage, null, null, this.store.getMarshalSignatureKeyPair().getPublicKey(), this.store.getMarshalSignatureKeySignature(), null, 0, 0);
 		
@@ -176,7 +179,8 @@ public class MarshalSessionCipher {
 															session.getCountY(),
 															messageSameUserRatchetKey.getPublicKey(),
 															sigma,
-															crossUserRatchetKey.getPublicKey());
+															crossUserRatchetKey.getPublicKey(),
+															session.getListChainRatchetKeys());
 		
 		if(isNewChain) {
 			session.setLocalCrossUserRatchetKey(crossUserRatchetKey);

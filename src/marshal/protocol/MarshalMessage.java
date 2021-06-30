@@ -1,5 +1,8 @@
 package marshal.protocol;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import org.whispersystems.libsignal.ecc.ECPublicKey;
 
 public class MarshalMessage {
@@ -12,8 +15,9 @@ public class MarshalMessage {
 	ECPublicKey senderSameUserRatchetKey;
 	byte[] sigma;
 	ECPublicKey senderCrossUserRatchetKey;
+	byte[] senderListChainRatchetKey;
 	
-	public MarshalMessage(byte[] ciphertext, byte[] iv, byte[] ciphertextSignature, int countX, int countY, ECPublicKey senderSameUserRatchetKey, byte[] sigma, ECPublicKey senderCrossUserRatchetKey) {
+	public MarshalMessage(byte[] ciphertext, byte[] iv, byte[] ciphertextSignature, int countX, int countY, ECPublicKey senderSameUserRatchetKey, byte[] sigma, ECPublicKey senderCrossUserRatchetKey, byte[] senderListChainRatchetKey) {
 		this.ciphertext = ciphertext;
 		this.iv = iv;
 		this.ciphertextSignature = ciphertextSignature;
@@ -22,6 +26,7 @@ public class MarshalMessage {
 		this.senderSameUserRatchetKey = senderSameUserRatchetKey;
 		this.sigma = sigma;
 		this.senderCrossUserRatchetKey = senderCrossUserRatchetKey;
+		this.senderListChainRatchetKey = senderListChainRatchetKey;
 	}
 
 	public byte[] getCiphertext() {
@@ -86,6 +91,34 @@ public class MarshalMessage {
 
 	public void setSenderCrossUserRatchetKey(ECPublicKey senderCrossUserRatchetKey) {
 		this.senderCrossUserRatchetKey = senderCrossUserRatchetKey;
+	}
+
+	public byte[] getSenderListChainRatchetKey() {
+		return senderListChainRatchetKey;
+	}
+
+	public void setSenderListChainRatchetKey(byte[] senderListChainRatchetKey) {
+		this.senderListChainRatchetKey = senderListChainRatchetKey;
+	}
+	
+	public byte[] serialize() {
+		byte[] result;
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+		try {
+			outputStream.write(this.ciphertext);
+			outputStream.write(this.iv);
+			outputStream.write(this.ciphertextSignature);
+			outputStream.write(this.countX);
+			outputStream.write(this.countY);
+			outputStream.write(this.senderSameUserRatchetKey.serialize());
+			outputStream.write(this.sigma);
+			outputStream.write(this.senderCrossUserRatchetKey.serialize());
+			outputStream.write(this.senderListChainRatchetKey);
+			result = outputStream.toByteArray( );
+		} catch (IOException e) {
+			throw new AssertionError(e);
+		}
+		return result;
 	}
 	
 }
